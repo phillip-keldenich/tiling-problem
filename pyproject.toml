@@ -1,0 +1,23 @@
+[project]
+name = "tiling"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Phillip Keldenich",email = "keldenich@ibr.cs.tu-bs.de"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "python-sat (>=1.8.dev16,<2.0)",
+    "pydantic (>=2.11.4,<3.0.0)",
+    "ortools (>=9.12.4544,<10.0.0)",
+    "matplotlib (>=3.10.3,<4.0.0)",
+]
+
+[tool.poetry]
+packages = [{include = "tiling", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
