@@ -4,16 +4,16 @@ from ortools.sat.python import cp_model
 
 class SimpleCPSATSolver:
     def _do_reflect(self, tile_type, axis_comb):
-        if axis_comb == '':
+        if axis_comb == "":
             return tile_type
-        if axis_comb == 'x':
-            return tile_type.reflect('x')
-        if axis_comb == 'y':
-            return tile_type.reflect('y')
-        tile_type = tile_type.reflect('x')
-        tile_type = tile_type.reflect('y')
+        if axis_comb == "x":
+            return tile_type.reflect("x")
+        if axis_comb == "y":
+            return tile_type.reflect("y")
+        tile_type = tile_type.reflect("x")
+        tile_type = tile_type.reflect("y")
         return tile_type
-    
+
     def _make_var(self, name=""):
         return self.solver.NewBoolVar(name)
 
@@ -40,17 +40,19 @@ class SimpleCPSATSolver:
         boundary_vars = {}
         cell_vars = self.cell_vars
         for x, y in cell_vars.keys():
-            n = [(x, y+1), (x+1, y)]
+            n = [(x, y + 1), (x + 1, y)]
             for nx, ny in n:
                 if (nx, ny) in cell_vars:
-                    boundary_vars[(x, y), (nx, ny)] = [self._make_var() for _ in range(len(self.boundary_types))]
+                    boundary_vars[(x, y), (nx, ny)] = [
+                        self._make_var() for _ in range(len(self.boundary_types))
+                    ]
                     self.solver.add_exactly_one(boundary_vars[(x, y), (nx, ny)])
         return boundary_vars
 
     def _actual_tile_types(self):
         result = []
         for actual_index, tile_type in enumerate(self.instance.tile_types):
-            for ref in (['', 'x', 'y', 'xy'] if self.allow_reflections else ['']):
+            for ref in ["", "x", "y", "xy"] if self.allow_reflections else [""]:
                 reflected = self._do_reflect(tile_type, ref)
                 for rot in range(4 if self.allow_rotations else 1):
                     rotated = reflected.rotate(rot)
@@ -58,7 +60,7 @@ class SimpleCPSATSolver:
                         rotated.actual_index = actual_index
                         result.append(rotated)
         return result
-    
+
     def _add_boundary_constraint(self, boundary_type_var, matching_cell_vars):
         """
         Add a constraint that ensures that the boundary variable is true
@@ -74,10 +76,18 @@ class SimpleCPSATSolver:
         actual_tiles_with_left_type = {i: [] for i in range(len(self.boundary_types))}
         actual_tiles_with_right_type = {i: [] for i in range(len(self.boundary_types))}
         for i, tile_type in enumerate(self.actual_tile_types):
-            actual_tiles_with_top_type[self.boundary_to_index[tuple(tile_type.top_edges)]].append(i)
-            actual_tiles_with_bottom_type[self.boundary_to_index[tuple(tile_type.bottom_edges)]].append(i)
-            actual_tiles_with_left_type[self.boundary_to_index[tuple(tile_type.left_edges)]].append(i)
-            actual_tiles_with_right_type[self.boundary_to_index[tuple(tile_type.right_edges)]].append(i)
+            actual_tiles_with_top_type[
+                self.boundary_to_index[tuple(tile_type.top_edges)]
+            ].append(i)
+            actual_tiles_with_bottom_type[
+                self.boundary_to_index[tuple(tile_type.bottom_edges)]
+            ].append(i)
+            actual_tiles_with_left_type[
+                self.boundary_to_index[tuple(tile_type.left_edges)]
+            ].append(i)
+            actual_tiles_with_right_type[
+                self.boundary_to_index[tuple(tile_type.right_edges)]
+            ].append(i)
         self.actual_tiles_with_top_type = actual_tiles_with_top_type
         self.actual_tiles_with_bottom_type = actual_tiles_with_bottom_type
         self.actual_tiles_with_left_type = actual_tiles_with_left_type
@@ -90,15 +100,23 @@ class SimpleCPSATSolver:
         attl = self.actual_tiles_with_left_type
         attr = self.actual_tiles_with_right_type
         for (c1, c2), bvs in self.boundary_vars.items():
-            below = (c1[1] < c2[1])
+            below = c1[1] < c2[1]
             c1vs, c2vs = self.cell_vars[c1], self.cell_vars[c2]
             for boundary_type_index, boundary_var in enumerate(bvs):
                 if below:
-                    self._add_boundary_constraint(boundary_var, [c1vs[x] for x in attt[boundary_type_index]])
-                    self._add_boundary_constraint(boundary_var, [c2vs[x] for x in attb[boundary_type_index]])
+                    self._add_boundary_constraint(
+                        boundary_var, [c1vs[x] for x in attt[boundary_type_index]]
+                    )
+                    self._add_boundary_constraint(
+                        boundary_var, [c2vs[x] for x in attb[boundary_type_index]]
+                    )
                 else:
-                    self._add_boundary_constraint(boundary_var, [c1vs[x] for x in attr[boundary_type_index]])
-                    self._add_boundary_constraint(boundary_var, [c2vs[x] for x in attl[boundary_type_index]])
+                    self._add_boundary_constraint(
+                        boundary_var, [c1vs[x] for x in attr[boundary_type_index]]
+                    )
+                    self._add_boundary_constraint(
+                        boundary_var, [c2vs[x] for x in attl[boundary_type_index]]
+                    )
 
     def _compute_boundary_types(self):
         boundary_to_index = {}
@@ -111,9 +129,12 @@ class SimpleCPSATSolver:
                     boundary_types.append(tb)
         return boundary_types, boundary_to_index
 
-    def __init__(self, instance: TilingInstance,
-                 allow_rotations: bool = True,
-                 allow_reflections: bool = True):
+    def __init__(
+        self,
+        instance: TilingInstance,
+        allow_rotations: bool = True,
+        allow_reflections: bool = True,
+    ):
         self.solver = cp_model.CpModel()
         self.instance = instance
         self.allow_rotations = allow_rotations
@@ -135,7 +156,9 @@ class SimpleCPSATSolver:
                 for i, var in enumerate(vars):
                     if sol.boolean_value(var):
                         if (x, y) in result:
-                            raise ValueError("Multiple tile types found for the same cell.")
+                            raise ValueError(
+                                "Multiple tile types found for the same cell."
+                            )
                         result[(x, y)] = self.actual_tile_types[i]
                 if (x, y) not in result:
                     raise ValueError("No tile type found for a cell.")

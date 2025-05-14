@@ -1,8 +1,8 @@
 from .simple_tiling_instance import (
     TilingInstance,
     TileType,
-    TileTypeDrawing, 
-    TileTypeDrawSegment, 
+    TileTypeDrawing,
+    TileTypeDrawSegment,
     TileTypeDrawVertex,
 )
 
