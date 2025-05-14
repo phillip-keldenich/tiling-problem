@@ -1,5 +1,4 @@
 from .simple_tiling_instance import TileType
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 

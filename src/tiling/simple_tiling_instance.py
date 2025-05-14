@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator, computed_field
+from pydantic import BaseModel, Field, model_validator
 import math
 
 
